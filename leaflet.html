@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<style>
+   .leaflet-popup {
+    background-color:rgb(27, 3, 27);
+    color:white;
+    text-align:left;
+    padding:0px;
+    margin-top:20px;
+}
+.leaflet-popup-content {
+    background-color:black;
+    color:white;
+    text-align:left;
+    padding:0px;
+    margin:12px,19px;
+}
+.leaflet-popup.tip
+{
+    background-color: black;
+}
+    .pp
+    {
+        padding-top:100px;
+    }
+    #box {
+        padding: 5px;
+        width: 200px;
+        z-index: 10;
+        position: relative;
+    }
+
+    #box form {
+        background: #006699;
+        padding: 5px;
+        display: none;
+        position: absolute;
+        top: 27px;
+    }
+
+    #button {
+        width: 75px;
+        background: #006699;
+        color: #fff;
+        padding: 3px 10px;
+        border: 1px solid #006699;
+        margin-bottom: 15px;
+        cursor: pointer;
+    }
+
+    input[type="submit"] {
+        background: none;
+        color: #fff;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    #main {
+        position: absolute;
+        width: 1450px;
+        height: 940px;
+        border: 1px solid black;
+        padding: 10px;
+    }
+
+    .d1 {
+        width: 500px;
+        height: 500px;
+        border: 1px solid red;
+        float: right;
+    }
+
+    .d2 {
+        width: 500px;
+        height: 500px;
+        border: 1px solid blue;
+        float: right;
+    }
+    .ss {
+    background: white;
+}
+    
+.table td {
+text-align: center;
+} 
+.table {
+    border-radius: 5px;
+    width: 50%;
+    margin: 0px auto;
+    float: none;
+}
+/* .leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background:black;
+    color:white
+} */
+
+</style>
+
+<head>
+    <title>Leaflet sample</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<!--     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.css" type="text/css"></script>
+ -->
+<!--     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+ -->
+
+</head>
+
+<body>
+    <div style="width: 100%;">
+        <div   style="width: 50%; height: 600px; float: left; background: rgb(48, 8, 48);">
+           
+            <div class="pp">
+                
+                <table class="table table-sm"  style="background-color:black;width:50%;" border=3 width:100px>
+
+
+                </table>
+            </div>
+            <div class="container" id="box" align="center">
+                <span id="button">ADD USER</span>
+                <div style="padding-top:10px">
+                    <form action="" id="form">
+                        <p><input type="text" placeholder="username" id="user" /></p>
+                        <p><input type="button" value="Submit" onclick="adduser()" /></p>
+                    </form></div>
+                
+            </div>
+
+        </div>
+
+        <div id="map" style="margin-left: 50%; height: 600px; background: blue; ">
+        </div>
+    </div>
+    <script>
+        var geo;
+        var map = L.map('map').setView([18.000055, 79.588165], 8, { closePopupOnClick: false });
+        mapLink =
+            '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+        L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; ' + mapLink + ' Contributors',
+            maxZoom: 18,
+        }).addTo(map);
+        var items = JSON.parse(localStorage.getItem('details')) || 0;
+        var find = JSON.parse(localStorage.getItem('details')) || 0;
+        var table = document.querySelector('table');
+        for (var i = 0; i < find.length; i++) {
+            console.log(find[i].username, "find[i].username")
+            table.innerHTML += `<tr><td><input type="button" value=` + find[i].username + ` onClick="edit(this)"></input></td><td>
+                       <input type="button"  value="Delete" onClick="deleted(this)"></input></td></tr>`
+        }
+        for (var i = 0; i < items.length; i++) {
+            var popup = new L.LatLng(items[i].address.lng, items[i].address.lat);
+            var popup1 = new L.Popup();
+            popup1.setLatLng(popup);
+            popup1.setContent(items[i].username);
+            marker = new L.marker([items[i].address.lng, items[i].address.lat])
+                .addTo(map.addLayer(popup1));
+
+
+        }
+        map.on('dblclick', function (e) {
+            var geos = { lat: e.latlng.lat, lng: e.latlng.lng }
+            localStorage.setItem('latlng', JSON.stringify(geos));
+        });
+
+
+
+        function adduser(event) {
+            if (localStorage.getItem('latlng') == undefined) {
+                geo = { 'lat': 79.588165, 'lng': 18.000055 }
+            }
+            else {
+                var geoos = JSON.parse(localStorage.getItem('latlng'));
+                console.log(geoos, "geoos");
+
+                geo = { 'lat': geoos.lng, 'lng': geoos.lat }
+
+            }
+
+            if (localStorage.getItem('id') == undefined || localStorage.getItem('id') == null) {
+                var arr = [];
+
+                var i = 1;
+                var username = document.getElementById('user').value;
+                var address = getaddress(geo, 10000);
+                var details = {
+                    id: i,
+                    username: username,
+                    address: {
+                        lat: address.lat,
+                        lng: address.lng
+                    }
+                };
+                arr.push(details);
+
+                localStorage.setItem("details", JSON.stringify(arr));
+                localStorage.setItem('id', i);
+                location.reload();
+
+            }
+            else {
+
+                var d = parseInt(localStorage.getItem('id'));
+                var i = d + 1;
+                var username = document.getElementById('user').value;
+                var address = getaddress(geo, 10000);
+                var details = {
+                    id: i,
+                    username: username,
+                    address: {
+                        lat: address.lat,
+                        lng: address.lng
+                    }
+                };
+                var arr = JSON.parse(localStorage.getItem('details'));
+                arr.push(details);
+                console.log(arr, "arr");
+                localStorage.setItem("details", JSON.stringify(arr));
+                localStorage.setItem('id', i);
+                location.reload();
+
+
+            }
+        }
+        function getaddress(center, radius) {
+            console.log(center, "center");
+            console.log(radius, "radius");
+
+            let x0 = center.lng;
+            let y0 = center.lat;
+            let rd = radius / 111300;
+            let u = Math.random();
+            let v = Math.random();
+            let w = rd * Math.sqrt(u);
+            let t = 2 * Math.PI * v;
+            let x = w * Math.cos(t);
+            let y = w * Math.sin(t);
+            let xp = x / Math.cos(y0);
+            return { 'lat': y + y0, 'lng': xp + x0 }
+
+        }
+
+        $("#button").click(function () {
+            console.log("hello");
+            $("#box form").toggle("slow");
+            return false;
+        });
+
+        function edit(x) {
+
+            map.closePopup();
+
+            row = x.parentElement.parentElement;
+            var items = JSON.parse(localStorage.getItem('details'));
+            var find = items[row.rowIndex];
+            console.log(find, "find");
+            var arr = [];
+            arr.push(find);
+
+            marker = new L.marker([arr[0].address.lng, arr[0].address.lat])
+
+                .addTo(map).bindPopup(arr[0].username).
+                openPopup();
+
+
+
+
+        }
+        function deleted(x) {
+            row = x.parentElement.parentElement;
+            var item = JSON.parse(localStorage.getItem('details'));
+            item.splice(row.rowIndex, 1);
+            localStorage.setItem("details", JSON.stringify(item));
+            location.reload();
+        }
+
+
+
+        function clear() {
+            console.log("clear")
+            localStorage.clear();
+            location.reload();
+        }
+
+
+    </script>
+</body>
+
+</html>
